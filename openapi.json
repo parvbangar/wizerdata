@@ -1,0 +1,949 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "WIZER Data API",
+  "version": "1.0.0-preview",
+  "description": "India-first news data: articles, AI tags, listed companies and story clusters. Never full article text. Private preview: the contract may change with 30 days' notice in the changelog.",
+  "contact": {
+   "email": "hello@wizerdata.io",
+   "url": "https://wizerdata.io/contact"
+  }
+ },
+ "servers": [
+  {
+   "url": "https://api.wizerdata.io/v1"
+  }
+ ],
+ "security": [
+  {
+   "ApiKey": []
+  }
+ ],
+ "paths": {
+  "/articles": {
+   "get": {
+    "operationId": "list-articles",
+    "summary": "List articles",
+    "description": "Articles matching your filters, newest first, each with its story block. Plan: All plans.",
+    "parameters": [
+     {
+      "name": "q",
+      "in": "query",
+      "required": false,
+      "description": "Keywords or a phrase in quotes. Matches title, description, summary and entities.",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "category",
+      "in": "query",
+      "required": false,
+      "description": "Comma-separated categories, for example business,politics.",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "language",
+      "in": "query",
+      "required": false,
+      "description": "Comma-separated ISO 639-1 codes, for example en,hi.",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "state",
+      "in": "query",
+      "required": false,
+      "description": "Indian state named in the article, for example Maharashtra.",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "company",
+      "in": "query",
+      "required": false,
+      "description": "NSE symbol, BSE code or ISIN. Comma-separated for several.",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "source",
+      "in": "query",
+      "required": false,
+      "description": "Publisher ids, comma-separated, for example economictimes.indiatimes.com.",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "sentiment",
+      "in": "query",
+      "required": false,
+      "description": "positive, neutral or negative.",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "from",
+      "in": "query",
+      "required": false,
+      "description": "Earliest first_seen, ISO 8601. Defaults to 24 hours ago.",
+      "schema": {
+       "type": "string",
+       "format": "date-time"
+      }
+     },
+     {
+      "name": "to",
+      "in": "query",
+      "required": false,
+      "description": "Latest first_seen, ISO 8601. Defaults to now.",
+      "schema": {
+       "type": "string",
+       "format": "date-time"
+      }
+     },
+     {
+      "name": "include",
+      "in": "query",
+      "required": false,
+      "description": "story to embed the story block, or none.",
+      "schema": {
+       "type": "string",
+       "default": "story"
+      }
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "description": "Records per page, 1 to 100.",
+      "schema": {
+       "type": "integer",
+       "default": 20
+      }
+     },
+     {
+      "name": "cursor",
+      "in": "query",
+      "required": false,
+      "description": "Opaque cursor from the previous page's next_cursor.",
+      "schema": {
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Page of Article records."
+     },
+     "400": {
+      "$ref": "#/components/responses/Error"
+     },
+     "401": {
+      "$ref": "#/components/responses/Error"
+     },
+     "403": {
+      "$ref": "#/components/responses/Error"
+     },
+     "404": {
+      "$ref": "#/components/responses/Error"
+     },
+     "429": {
+      "$ref": "#/components/responses/Error"
+     }
+    }
+   }
+  },
+  "/articles/{article_id}": {
+   "get": {
+    "operationId": "get-article",
+    "summary": "Get an article",
+    "description": "One article by id. Plan: All plans.",
+    "parameters": [
+     {
+      "name": "article_id",
+      "in": "path",
+      "required": true,
+      "description": "For example wz_1886016.",
+      "schema": {
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Article record."
+     },
+     "400": {
+      "$ref": "#/components/responses/Error"
+     },
+     "401": {
+      "$ref": "#/components/responses/Error"
+     },
+     "403": {
+      "$ref": "#/components/responses/Error"
+     },
+     "404": {
+      "$ref": "#/components/responses/Error"
+     },
+     "429": {
+      "$ref": "#/components/responses/Error"
+     }
+    }
+   }
+  },
+  "/stories": {
+   "get": {
+    "operationId": "list-stories",
+    "summary": "List stories",
+    "description": "Stories (clusters of articles about one event), sorted by volume, velocity or recency. Plan: All plans.",
+    "parameters": [
+     {
+      "name": "q",
+      "in": "query",
+      "required": false,
+      "description": "Keywords or a phrase in quotes. Matches title, description, summary and entities.",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "category",
+      "in": "query",
+      "required": false,
+      "description": "Comma-separated categories, for example business,politics.",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "language",
+      "in": "query",
+      "required": false,
+      "description": "Comma-separated ISO 639-1 codes, for example en,hi.",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "state",
+      "in": "query",
+      "required": false,
+      "description": "Indian state named in the article, for example Maharashtra.",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "company",
+      "in": "query",
+      "required": false,
+      "description": "NSE symbol, BSE code or ISIN. Comma-separated for several.",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "source",
+      "in": "query",
+      "required": false,
+      "description": "Publisher ids, comma-separated, for example economictimes.indiatimes.com.",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "sentiment",
+      "in": "query",
+      "required": false,
+      "description": "positive, neutral or negative.",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "from",
+      "in": "query",
+      "required": false,
+      "description": "Earliest first_seen, ISO 8601. Defaults to 24 hours ago.",
+      "schema": {
+       "type": "string",
+       "format": "date-time"
+      }
+     },
+     {
+      "name": "to",
+      "in": "query",
+      "required": false,
+      "description": "Latest first_seen, ISO 8601. Defaults to now.",
+      "schema": {
+       "type": "string",
+       "format": "date-time"
+      }
+     },
+     {
+      "name": "sort",
+      "in": "query",
+      "required": false,
+      "description": "recent, volume, velocity or rising.",
+      "schema": {
+       "type": "string",
+       "default": "recent"
+      }
+     },
+     {
+      "name": "breaking",
+      "in": "query",
+      "required": false,
+      "description": "Only stories flagged breaking.",
+      "schema": {
+       "type": "boolean"
+      }
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "description": "Records per page, 1 to 100.",
+      "schema": {
+       "type": "integer",
+       "default": 20
+      }
+     },
+     {
+      "name": "cursor",
+      "in": "query",
+      "required": false,
+      "description": "Opaque cursor from the previous page's next_cursor.",
+      "schema": {
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Page of Story records. Explore gets 3 top links; volume and velocity need Build."
+     },
+     "400": {
+      "$ref": "#/components/responses/Error"
+     },
+     "401": {
+      "$ref": "#/components/responses/Error"
+     },
+     "403": {
+      "$ref": "#/components/responses/Error"
+     },
+     "404": {
+      "$ref": "#/components/responses/Error"
+     },
+     "429": {
+      "$ref": "#/components/responses/Error"
+     }
+    }
+   }
+  },
+  "/stories/{story_id}": {
+   "get": {
+    "operationId": "get-story",
+    "summary": "Get a story",
+    "description": "One story with summary, volume, velocity and top related links. Plan: All plans.",
+    "parameters": [
+     {
+      "name": "story_id",
+      "in": "path",
+      "required": true,
+      "description": "For example 970412.",
+      "schema": {
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Story record."
+     },
+     "400": {
+      "$ref": "#/components/responses/Error"
+     },
+     "401": {
+      "$ref": "#/components/responses/Error"
+     },
+     "403": {
+      "$ref": "#/components/responses/Error"
+     },
+     "404": {
+      "$ref": "#/components/responses/Error"
+     },
+     "429": {
+      "$ref": "#/components/responses/Error"
+     }
+    }
+   }
+  },
+  "/stories/{story_id}/articles": {
+   "get": {
+    "operationId": "story-articles",
+    "summary": "List a story's articles",
+    "description": "Every article in the story: full cluster membership, oldest first. Plan: Full access.",
+    "parameters": [
+     {
+      "name": "story_id",
+      "in": "path",
+      "required": true,
+      "description": "Story id.",
+      "schema": {
+       "type": "integer"
+      }
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "description": "Records per page, 1 to 100.",
+      "schema": {
+       "type": "integer",
+       "default": 20
+      }
+     },
+     {
+      "name": "cursor",
+      "in": "query",
+      "required": false,
+      "description": "Opaque cursor from the previous page's next_cursor.",
+      "schema": {
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Page of Article records."
+     },
+     "400": {
+      "$ref": "#/components/responses/Error"
+     },
+     "401": {
+      "$ref": "#/components/responses/Error"
+     },
+     "403": {
+      "$ref": "#/components/responses/Error"
+     },
+     "404": {
+      "$ref": "#/components/responses/Error"
+     },
+     "429": {
+      "$ref": "#/components/responses/Error"
+     }
+    }
+   }
+  },
+  "/companies/{id}/stories": {
+   "get": {
+    "operationId": "company-stories",
+    "summary": "List a company's stories",
+    "description": "Stories that name a listed company, newest first, with attention counts. Plan: All plans.",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "description": "NSE symbol, BSE code or ISIN, for example COALINDIA.",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "from",
+      "in": "query",
+      "required": false,
+      "description": "Earliest first_seen.",
+      "schema": {
+       "type": "string",
+       "format": "date-time"
+      }
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "description": "Records per page, 1 to 100.",
+      "schema": {
+       "type": "integer",
+       "default": 20
+      }
+     },
+     {
+      "name": "cursor",
+      "in": "query",
+      "required": false,
+      "description": "Opaque cursor from the previous page's next_cursor.",
+      "schema": {
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Page of Story records."
+     },
+     "400": {
+      "$ref": "#/components/responses/Error"
+     },
+     "401": {
+      "$ref": "#/components/responses/Error"
+     },
+     "403": {
+      "$ref": "#/components/responses/Error"
+     },
+     "404": {
+      "$ref": "#/components/responses/Error"
+     },
+     "429": {
+      "$ref": "#/components/responses/Error"
+     }
+    }
+   }
+  },
+  "/stream": {
+   "get": {
+    "operationId": "stream",
+    "summary": "Stream new articles",
+    "description": "Server-sent events: one event per new article or story update that matches your filters. Plan: Full access.",
+    "parameters": [
+     {
+      "name": "q",
+      "in": "query",
+      "required": false,
+      "description": "Keywords or a phrase in quotes. Matches title, description, summary and entities.",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "category",
+      "in": "query",
+      "required": false,
+      "description": "Comma-separated categories, for example business,politics.",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "language",
+      "in": "query",
+      "required": false,
+      "description": "Comma-separated ISO 639-1 codes, for example en,hi.",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "state",
+      "in": "query",
+      "required": false,
+      "description": "Indian state named in the article, for example Maharashtra.",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "company",
+      "in": "query",
+      "required": false,
+      "description": "NSE symbol, BSE code or ISIN. Comma-separated for several.",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "source",
+      "in": "query",
+      "required": false,
+      "description": "Publisher ids, comma-separated, for example economictimes.indiatimes.com.",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "events",
+      "in": "query",
+      "required": false,
+      "description": "article, story or both.",
+      "schema": {
+       "type": "string",
+       "default": "article"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "text/event-stream of Article and Story events."
+     },
+     "400": {
+      "$ref": "#/components/responses/Error"
+     },
+     "401": {
+      "$ref": "#/components/responses/Error"
+     },
+     "403": {
+      "$ref": "#/components/responses/Error"
+     },
+     "404": {
+      "$ref": "#/components/responses/Error"
+     },
+     "429": {
+      "$ref": "#/components/responses/Error"
+     }
+    }
+   }
+  },
+  "/sources": {
+   "get": {
+    "operationId": "list-sources",
+    "summary": "List sources",
+    "description": "Publishers we cover, with languages, tier and type. Plan: All plans.",
+    "parameters": [
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "description": "Records per page, 1 to 100.",
+      "schema": {
+       "type": "integer",
+       "default": 20
+      }
+     },
+     {
+      "name": "cursor",
+      "in": "query",
+      "required": false,
+      "description": "Opaque cursor from the previous page's next_cursor.",
+      "schema": {
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Page of Source records."
+     },
+     "400": {
+      "$ref": "#/components/responses/Error"
+     },
+     "401": {
+      "$ref": "#/components/responses/Error"
+     },
+     "403": {
+      "$ref": "#/components/responses/Error"
+     },
+     "404": {
+      "$ref": "#/components/responses/Error"
+     },
+     "429": {
+      "$ref": "#/components/responses/Error"
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "securitySchemes": {
+   "ApiKey": {
+    "type": "apiKey",
+    "in": "header",
+    "name": "X-API-Key"
+   }
+  },
+  "schemas": {
+   "Article": {
+    "type": "object",
+    "properties": {
+     "article_id": {
+      "type": "string",
+      "description": "Stable WIZER id, prefixed wz_."
+     },
+     "link": {
+      "type": "string",
+      "format": "uri",
+      "description": "Canonical publisher URL. The article body stays with the publisher."
+     },
+     "title": {
+      "type": "string",
+      "description": "Headline as published."
+     },
+     "description": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "The publisher's own meta description, at most 300 characters."
+     },
+     "image_url": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "format": "uri",
+      "description": "Lead image URL declared by the article page. We link to it and never re-host it."
+     },
+     "video_url": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "format": "uri",
+      "description": "Embedded video URL, when the page declares one."
+     },
+     "creator": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "Named authors from the page's structured data. Desk and bureau bylines are dropped."
+     },
+     "keywords": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "Publisher keywords, topped up with the article's leading entities."
+     },
+     "language": {
+      "type": "string",
+      "description": "ISO 639-1 code detected from the text: en, hi, and regional languages."
+     },
+     "country": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "Country of the publisher."
+     },
+     "pubDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Publisher's timestamp, UTC ISO 8601."
+     },
+     "first_seen": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When WIZER first saw the URL, UTC ISO 8601."
+     },
+     "detection_lag_min": {
+      "type": [
+       "number",
+       "null"
+      ],
+      "description": "Minutes from pubDate to first_seen. Large for articles a publisher lists late."
+     },
+     "source": {
+      "type": "object",
+      "description": "id, name, domain, url, icon, tier (1 is the most-read) and type (news, wire, official, global)."
+     },
+     "ai_summary": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "One factual sentence written by WIZER's model from the article. Not publisher text."
+     },
+     "category": {
+      "type": "string",
+      "description": "One of 13 domains: business, politics, world, crime, sports, cricket, entertainment, health, education, environment, technology, crypto, general."
+     },
+     "category_confidence": {
+      "type": "number",
+      "description": "Model probability for the category, 0 to 1."
+     },
+     "category_also": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "Up to two secondary categories."
+     },
+     "article_type": {
+      "type": "string",
+      "description": "report, opinion, live_blog, press_release, analysis_explainer, digest or video_photo."
+     },
+     "sentiment": {
+      "type": "object",
+      "description": "label (positive, neutral, negative) and score."
+     },
+     "sensationalism": {
+      "type": "number",
+      "description": "How sensational the framing is, 0 to 1."
+     },
+     "entities": {
+      "type": "object",
+      "description": "organizations, people and places named in the article."
+     },
+     "geo": {
+      "type": "object",
+      "description": "countries, Indian states and places named. States are resolved from cities and districts."
+     },
+     "duplicate": {
+      "type": "boolean",
+      "description": "True when the same publisher already ran this headline in the story."
+     },
+     "wire_reprint": {
+      "type": "boolean",
+      "description": "True for agency copy (PTI, ANI, IANS, UNI). Counted as amplification, not new reporting."
+     },
+     "companies": {
+      "type": "array",
+      "items": {
+       "type": "object"
+      },
+      "description": "Listed companies the article names: name, mention, nse_symbol, bse_code, isin, sector, industry."
+     },
+     "story": {
+      "$ref": "#/components/schemas/StoryRef"
+     }
+    },
+    "required": [
+     "article_id",
+     "link",
+     "title",
+     "language",
+     "first_seen",
+     "category"
+    ]
+   },
+   "StoryRef": {
+    "type": "object",
+    "properties": {
+     "story_id": {
+      "type": "integer"
+     },
+     "headline": {
+      "type": "string"
+     },
+     "summary": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "related_count": {
+      "type": "integer"
+     },
+     "volume": {
+      "type": "object",
+      "properties": {
+       "articles": {
+        "type": "integer"
+       },
+       "publishers": {
+        "type": "integer"
+       },
+       "wire_reprints": {
+        "type": "integer"
+       },
+       "languages": {
+        "type": "array",
+        "items": {
+         "type": "string"
+        }
+       }
+      }
+     },
+     "velocity": {
+      "type": "object",
+      "properties": {
+       "v15": {
+        "type": "number"
+       },
+       "v60": {
+        "type": "number"
+       },
+       "acceleration": {
+        "type": "number"
+       },
+       "peak_v60": {
+        "type": "number"
+       },
+       "peak_at": {
+        "type": [
+         "string",
+         "null"
+        ],
+        "format": "date-time"
+       },
+       "breaking": {
+        "type": "boolean"
+       }
+      }
+     },
+     "top_related": {
+      "type": "array",
+      "maxItems": 5,
+      "items": {
+       "type": "object",
+       "properties": {
+        "title": {
+         "type": "string"
+        },
+        "source_name": {
+         "type": "string"
+        },
+        "link": {
+         "type": "string",
+         "format": "uri"
+        },
+        "language": {
+         "type": "string"
+        },
+        "first_seen": {
+         "type": "string",
+         "format": "date-time"
+        }
+       }
+      }
+     }
+    }
+   },
+   "Error": {
+    "type": "object",
+    "required": [
+     "error"
+    ],
+    "properties": {
+     "error": {
+      "type": "object",
+      "properties": {
+       "code": {
+        "type": "string"
+       },
+       "message": {
+        "type": "string"
+       },
+       "request_id": {
+        "type": "string"
+       }
+      }
+     }
+    }
+   }
+  },
+  "responses": {
+   "Error": {
+    "description": "Error",
+    "content": {
+     "application/json": {
+      "schema": {
+       "$ref": "#/components/schemas/Error"
+      }
+     }
+    }
+   }
+  }
+ }
+}

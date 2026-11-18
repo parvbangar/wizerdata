@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://wizerdata.io/sitemap.xml

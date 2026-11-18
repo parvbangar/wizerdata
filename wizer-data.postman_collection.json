@@ -1,0 +1,409 @@
+{
+ "info": {
+  "name": "WIZER Data API (preview)",
+  "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+ },
+ "variable": [
+  {
+   "key": "baseUrl",
+   "value": "https://api.wizerdata.io/v1"
+  },
+  {
+   "key": "WIZER_API_KEY",
+   "value": ""
+  }
+ ],
+ "item": [
+  {
+   "name": "List articles",
+   "request": {
+    "method": "GET",
+    "header": [
+     {
+      "key": "X-API-Key",
+      "value": "{{WIZER_API_KEY}}"
+     }
+    ],
+    "url": {
+     "raw": "{{baseUrl}}/articles",
+     "host": [
+      "{{baseUrl}}"
+     ],
+     "path": [
+      "articles"
+     ],
+     "query": [
+      {
+       "key": "q",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "category",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "language",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "state",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "company",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "source",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "sentiment",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "from",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "to",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "include",
+       "value": "story",
+       "disabled": false
+      },
+      {
+       "key": "limit",
+       "value": "20",
+       "disabled": false
+      },
+      {
+       "key": "cursor",
+       "value": "",
+       "disabled": true
+      }
+     ]
+    },
+    "description": "Articles matching your filters, newest first, each with its story block. Plan: All plans."
+   }
+  },
+  {
+   "name": "Get an article",
+   "request": {
+    "method": "GET",
+    "header": [
+     {
+      "key": "X-API-Key",
+      "value": "{{WIZER_API_KEY}}"
+     }
+    ],
+    "url": {
+     "raw": "{{baseUrl}}/articles/wz_1886016",
+     "host": [
+      "{{baseUrl}}"
+     ],
+     "path": [
+      "articles",
+      "wz_1886016"
+     ],
+     "query": []
+    },
+    "description": "One article by id. Plan: All plans."
+   }
+  },
+  {
+   "name": "List stories",
+   "request": {
+    "method": "GET",
+    "header": [
+     {
+      "key": "X-API-Key",
+      "value": "{{WIZER_API_KEY}}"
+     }
+    ],
+    "url": {
+     "raw": "{{baseUrl}}/stories",
+     "host": [
+      "{{baseUrl}}"
+     ],
+     "path": [
+      "stories"
+     ],
+     "query": [
+      {
+       "key": "q",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "category",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "language",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "state",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "company",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "source",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "sentiment",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "from",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "to",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "sort",
+       "value": "recent",
+       "disabled": false
+      },
+      {
+       "key": "breaking",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "limit",
+       "value": "20",
+       "disabled": false
+      },
+      {
+       "key": "cursor",
+       "value": "",
+       "disabled": true
+      }
+     ]
+    },
+    "description": "Stories (clusters of articles about one event), sorted by volume, velocity or recency. Plan: All plans."
+   }
+  },
+  {
+   "name": "Get a story",
+   "request": {
+    "method": "GET",
+    "header": [
+     {
+      "key": "X-API-Key",
+      "value": "{{WIZER_API_KEY}}"
+     }
+    ],
+    "url": {
+     "raw": "{{baseUrl}}/stories/970412",
+     "host": [
+      "{{baseUrl}}"
+     ],
+     "path": [
+      "stories",
+      "970412"
+     ],
+     "query": []
+    },
+    "description": "One story with summary, volume, velocity and top related links. Plan: All plans."
+   }
+  },
+  {
+   "name": "List a story's articles",
+   "request": {
+    "method": "GET",
+    "header": [
+     {
+      "key": "X-API-Key",
+      "value": "{{WIZER_API_KEY}}"
+     }
+    ],
+    "url": {
+     "raw": "{{baseUrl}}/stories/970412/articles",
+     "host": [
+      "{{baseUrl}}"
+     ],
+     "path": [
+      "stories",
+      "970412",
+      "articles"
+     ],
+     "query": [
+      {
+       "key": "limit",
+       "value": "20",
+       "disabled": false
+      },
+      {
+       "key": "cursor",
+       "value": "",
+       "disabled": true
+      }
+     ]
+    },
+    "description": "Every article in the story: full cluster membership, oldest first. Plan: Full access."
+   }
+  },
+  {
+   "name": "List a company's stories",
+   "request": {
+    "method": "GET",
+    "header": [
+     {
+      "key": "X-API-Key",
+      "value": "{{WIZER_API_KEY}}"
+     }
+    ],
+    "url": {
+     "raw": "{{baseUrl}}/companies/COALINDIA/stories",
+     "host": [
+      "{{baseUrl}}"
+     ],
+     "path": [
+      "companies",
+      "COALINDIA",
+      "stories"
+     ],
+     "query": [
+      {
+       "key": "from",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "limit",
+       "value": "20",
+       "disabled": false
+      },
+      {
+       "key": "cursor",
+       "value": "",
+       "disabled": true
+      }
+     ]
+    },
+    "description": "Stories that name a listed company, newest first, with attention counts. Plan: All plans."
+   }
+  },
+  {
+   "name": "Stream new articles",
+   "request": {
+    "method": "GET",
+    "header": [
+     {
+      "key": "X-API-Key",
+      "value": "{{WIZER_API_KEY}}"
+     }
+    ],
+    "url": {
+     "raw": "{{baseUrl}}/stream",
+     "host": [
+      "{{baseUrl}}"
+     ],
+     "path": [
+      "stream"
+     ],
+     "query": [
+      {
+       "key": "q",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "category",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "language",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "state",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "company",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "source",
+       "value": "",
+       "disabled": true
+      },
+      {
+       "key": "events",
+       "value": "article",
+       "disabled": false
+      }
+     ]
+    },
+    "description": "Server-sent events: one event per new article or story update that matches your filters. Plan: Full access."
+   }
+  },
+  {
+   "name": "List sources",
+   "request": {
+    "method": "GET",
+    "header": [
+     {
+      "key": "X-API-Key",
+      "value": "{{WIZER_API_KEY}}"
+     }
+    ],
+    "url": {
+     "raw": "{{baseUrl}}/sources",
+     "host": [
+      "{{baseUrl}}"
+     ],
+     "path": [
+      "sources"
+     ],
+     "query": [
+      {
+       "key": "limit",
+       "value": "20",
+       "disabled": false
+      },
+      {
+       "key": "cursor",
+       "value": "",
+       "disabled": true
+      }
+     ]
+    },
+    "description": "Publishers we cover, with languages, tier and type. Plan: All plans."
+   }
+  }
+ ]
+}
