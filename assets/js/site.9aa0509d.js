@@ -151,18 +151,20 @@
   const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
-  /* Hero: silk ribbons spun from fine threads. News articles ride the waves,
-     peel off and merge into glowing story orbs, which pulse as they grow. */
+  /* Hero: silk ribbons spun from fine threads, with beams of light that flow
+     along the wave lines. No particles, no orbs: just the waves and the light. */
+  const isDark = () => matchMedia("(prefers-color-scheme: dark)").matches && document.documentElement.dataset.theme !== "light" || document.documentElement.dataset.theme === "dark";
   const ribbons = {
-    init(w, h, prev) {
+    init(w, h) {
       const mobile = w < 700;
       const R = [
         { base: 0.72, amp: 0.12, f1: 0.0028, f2: 0.0066, s1: 0.9, s2: 0.55, th: 0.30, n: mobile ? 22 : 44, ph: 0.0, col: "b", a: 0.85 },
         { base: 0.86, amp: 0.09, f1: 0.0036, f2: 0.0054, s1: -0.7, s2: 0.85, th: 0.20, n: mobile ? 18 : 34, ph: 2.1, col: "a", a: 0.7 },
         { base: 0.58, amp: 0.15, f1: 0.0022, f2: 0.0085, s1: 0.55, s2: -0.65, th: 0.16, n: mobile ? 14 : 26, ph: 4.2, col: "c", a: 0.75 },
       ];
-      const nodes = (mobile ? [[0.28, 0], [0.70, 1]] : [[0.20, 0], [0.40, 1], [0.60, 0], [0.80, 2]]).map(([x, r]) => ({ fx: x, r, pulse: 0, size: 6 + Math.random() * 8 }));
-      return { R, nodes, ps: prev?.ps || [], px: w * 0.6, py: h * 0.7, mobile, frame: 0 };
+      // light beams: each travels left to right along one ribbon, lighting a band of its threads
+      R.forEach((r, i) => { r.beams = [{ off: i * 0.31, speed: 0.055 + i * 0.012, lo: 0.15, hi: 0.75 }, { off: 0.55 + i * 0.17, speed: 0.04 + i * 0.01, lo: 0.4, hi: 1 }]; });
+      return { R, px: w * 0.6, py: h * 0.7, mobile, dark: isDark() };
     },
     y(st, r, x, w, h, time) {
       const base = h * r.base + h * r.amp * (Math.sin(x * r.f1 + time * r.s1 + r.ph) + 0.55 * Math.sin(x * r.f2 + time * r.s2 + r.ph * 1.7));
@@ -176,29 +178,11 @@
       const tx = inside ? pointer.x - rect.left : w * (0.6 + 0.15 * Math.sin(time * 0.7));
       const ty = inside ? pointer.y - rect.top : h * 0.72;
       st.px += (tx - st.px) * 0.05; st.py += (ty - st.py) * 0.05;
-      // nodes sit on their ribbon
-      for (const n of st.nodes) { n.x = n.fx * w; n.y = this.y(st, st.R[n.r], n.x, w, h, time); n.pulse *= 0.94; }
-      // articles: spawn at the right edge, ride a ribbon, peel off into a node
-      st.frame++;
-      const want = st.mobile ? 34 : 80;
-      if (st.ps.length < want && st.frame % 4 === 0) {
-        const k = Math.floor(Math.random() * st.nodes.length);
-        st.ps.push({ x: w + 10, ri: Math.floor(Math.random() * st.R.length), off: (Math.random() - 0.5), k, v: 1.0 + Math.random() * 1.6, s: 2 + Math.random() * 2, trail: [] });
-      }
-      for (let i = st.ps.length - 1; i >= 0; i--) {
-        const p = st.ps[i], r = st.R[p.ri], n = st.nodes[p.k];
-        p.x -= p.v * (p.x - n.x < 160 ? 0.75 : 1);
-        const onRibbon = this.y(st, r, p.x, w, h, time) + p.off * r.th * h * this.twist(r, p.x, time);
-        const b = clamp(1 - (p.x - n.x) / 200, 0, 1), e = b * b * (3 - 2 * b);
-        p.y = onRibbon + (n.y - onRibbon) * e;
-        p.trail.push(p.x, p.y); if (p.trail.length > 16) p.trail.splice(0, 2);
-        if (p.x <= n.x + 3) { n.pulse = 1; n.size = Math.min(n.size + 0.7, 26); st.ps.splice(i, 1); }
-      }
-      for (const n of st.nodes) n.size = Math.max(6, n.size - 0.006);
       if (silent) return;
 
       ctx.clearRect(0, 0, w, h);
       ctx.lineCap = "round";
+      const beamT = t * 0.001;
       for (const r of st.R) {
         const col = pal[r.col];
         const g = ctx.createLinearGradient(0, 0, w, 0);
@@ -210,40 +194,37 @@
         for (let x = -20; x <= w + 20; x += step * 2) { const y = this.y(st, r, x, w, h, time) - r.th * h * 0.5 * this.twist(r, x, time); x === -20 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
         for (let x = w + 20; x >= -20; x -= step * 2) ctx.lineTo(x, this.y(st, r, x, w, h, time) + r.th * h * 0.5 * this.twist(r, x, time));
         ctx.closePath(); ctx.globalAlpha = 0.16 * r.a; ctx.fillStyle = g; ctx.fill();
-        // threads
+        // threads (kept as paths so the light can run along the same lines)
         ctx.lineWidth = 1;
+        const paths = [];
         for (let i = 0; i < r.n; i++) {
           const f = i / (r.n - 1) - 0.5, edge = 1 - Math.abs(f) * 2;
           ctx.globalAlpha = (0.16 + 0.5 * edge) * r.a;
-          ctx.beginPath();
+          const p = new Path2D();
           for (let x = -20; x <= w + 20; x += step) {
             const y = this.y(st, r, x, w, h, time) + f * r.th * h * this.twist(r, x, time) + Math.sin(x * 0.012 + i * 0.6 + time * 2) * 1.6;
-            x === -20 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+            x === -20 ? p.moveTo(x, y) : p.lineTo(x, y);
           }
-          ctx.stroke();
+          ctx.stroke(p); paths.push([p, f + 0.5]);
+        }
+        // light flowing through the wave lines: a bright comet with a soft tail, sheared across the threads
+        for (const b of r.beams) {
+          const u = ((beamT * b.speed + b.off) % 1.3) - 0.15;          // -0.15 .. 1.15 of the width
+          const fade = clamp(Math.min(u + 0.15, 1.15 - u) * 6, 0, 1);
+          for (const [p, k] of paths) {
+            if (k < b.lo || k > b.hi) continue;
+            const mid = (k - b.lo) / (b.hi - b.lo), side = 1 - Math.abs(mid - 0.5) * 2;
+            const c = (u + (k - 0.5) * 0.05) * w, tail = w * 0.16, head = w * 0.02;
+            const g = ctx.createLinearGradient(c - tail, 0, c + head, 0);
+            const core = st.dark ? [255, 255, 255] : pal.a;
+            g.addColorStop(0, rgba(pal[r.col], 0)); g.addColorStop(0.7, rgba(pal.a, 0.35 * side));
+            g.addColorStop(0.93, rgba(core, 0.95 * side)); g.addColorStop(1, rgba(core, 0));
+            ctx.globalAlpha = fade * r.a;
+            ctx.strokeStyle = g; ctx.lineWidth = 1.4; ctx.stroke(p);
+          }
         }
       }
       ctx.globalAlpha = 1;
-      // article trails and dots
-      for (const p of st.ps) {
-        const tr = p.trail;
-        if (tr.length > 3) {
-          ctx.beginPath(); ctx.moveTo(tr[0], tr[1]);
-          for (let j = 2; j < tr.length; j += 2) ctx.lineTo(tr[j], tr[j + 1]);
-          ctx.strokeStyle = rgba(pal.a, 0.28); ctx.lineWidth = p.s * 0.9; ctx.stroke();
-        }
-        ctx.fillStyle = rgba(pal.a, 0.95); ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, 6.283); ctx.fill();
-      }
-      // story orbs
-      for (const n of st.nodes) {
-        const R = 16 + n.size * 2.6 + n.pulse * 22;
-        const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, R);
-        g.addColorStop(0, rgba(pal.a, 0.7)); g.addColorStop(0.4, rgba(pal.b, 0.35)); g.addColorStop(1, rgba(pal.b, 0));
-        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(n.x, n.y, R, 0, 6.283); ctx.fill();
-        ctx.fillStyle = rgba(pal.bg, 0.95); ctx.beginPath(); ctx.arc(n.x, n.y, 4.5 + n.size * 0.22, 0, 6.283); ctx.fill();
-        ctx.strokeStyle = rgba(pal.a, 1); ctx.lineWidth = 2; ctx.stroke();
-        if (n.pulse > 0.05) { ctx.strokeStyle = rgba(pal.a, n.pulse * 0.5); ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(n.x, n.y, 8 + (1 - n.pulse) * 34, 0, 6.283); ctx.stroke(); }
-      }
     }
   };
 
@@ -266,12 +247,18 @@
         g.addColorStop(0, `rgba(${cr},${cg},${cb},${0.10 + off * 0.05})`); g.addColorStop(1, `rgba(${ar},${ag},${ab},${0.05 + off * 0.04})`);
         ctx.fillStyle = g; ctx.fill();
         // a fine highlight thread along each wave crest
-        ctx.beginPath();
+        const crest = new Path2D();
         for (let x = -10; x <= w + 10; x += 12) {
           const y = h * (0.35 + off * 0.45) + Math.sin(x * 0.006 + time * (1 + off) + l) * amp + Math.cos(x * 0.011 - time * 1.4 + l * 2) * amp * 0.35;
-          x === -10 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+          x === -10 ? crest.moveTo(x, y) : crest.lineTo(x, y);
         }
-        ctx.strokeStyle = `rgba(${ar},${ag},${ab},${0.10 + off * 0.08})`; ctx.lineWidth = 1; ctx.stroke();
+        ctx.strokeStyle = `rgba(${ar},${ag},${ab},${0.10 + off * 0.08})`; ctx.lineWidth = 1; ctx.stroke(crest);
+        // light running along the crest
+        const u = ((t * 0.00005 * (0.8 + off) + l * 0.37) % 1.4) - 0.2, c = u * w;
+        const g2 = ctx.createLinearGradient(c - w * 0.22, 0, c + w * 0.02, 0);
+        g2.addColorStop(0, `rgba(${ar},${ag},${ab},0)`); g2.addColorStop(0.85, `rgba(${ar},${ag},${ab},${0.35 + off * 0.3})`);
+        g2.addColorStop(0.97, `rgba(${cr},${cg},${cb},0.9)`); g2.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
+        ctx.strokeStyle = g2; ctx.lineWidth = 1.5; ctx.stroke(crest);
       }
     }
   };
@@ -366,8 +353,8 @@
     });
   });
 
-  /* cursor-following glow on cards */
-  const SPOT = ".ncard,.plan,.metric,.trust,.cmp,.card-flat,.co-card,.fields > div";
+  /* cursor-following glow on cards, and the specular light on glass buttons */
+  const SPOT = ".ncard,.plan,.metric,.trust,.cmp,.card-flat,.co-card,.fields > div,.use,.btn,.pill";
   if (!reduce && matchMedia("(hover: hover)").matches) {
     document.addEventListener("pointermove", e => {
       const el = e.target.closest?.(SPOT); if (!el) return;
@@ -376,14 +363,40 @@
     }, { passive: true });
   }
 
+  /* ---------------- home: hero story card rotates through the free sample ---------------- */
+  $$("[data-rotator]").forEach(card => {
+    const slides = $$(".story-slide", card), dots = $$(".sdot", card);
+    if (slides.length < 2) return;
+    let i = 0, timer = 0, hold = false;
+    const show = n => {
+      i = (n + slides.length) % slides.length;
+      slides.forEach((s, k) => {
+        const on = k === i;
+        s.classList.toggle("on", on);
+        s.toggleAttribute("aria-hidden", !on);
+        $$("a", s).forEach(a => { on ? a.removeAttribute("tabindex") : a.setAttribute("tabindex", "-1"); });
+      });
+      dots.forEach((d, k) => d.setAttribute("aria-pressed", k === i));
+    };
+    const off = () => document.documentElement.classList.contains("motion-off");
+    const tick = () => { clearTimeout(timer); timer = setTimeout(() => { if (!hold && !off() && !document.hidden) show(i + 1); tick(); }, 6000); };
+    dots.forEach(d => d.addEventListener("click", () => { show(+d.dataset.go); tick(); }));
+    card.addEventListener("pointerenter", () => { hold = true; });
+    card.addEventListener("pointerleave", () => { hold = false; });
+    card.addEventListener("focusin", () => { hold = true; });
+    card.addEventListener("focusout", e => { if (!card.contains(e.relatedTarget)) hold = false; });
+    if (!reduce) tick();
+  });
+
   /* ---------------- home: live story table ---------------- */
   const demo = $("#demo");
   if (demo) {
     const rows = JSON.parse($("#stories-data").textContent);
     const st = { cat: "all", q: "", view: "table" };
     const body = $("#demo-body", demo), count = $("#demo-count", demo), maxA = Math.max(...rows.map(r => r.a));
-    const cats = ["all", ...new Set(rows.map(r => r.cat))].slice(0, 5);
-    $("#demo-cats", demo).innerHTML = cats.map(c => `<button class="chip" type="button" data-cat="${esc(c)}" aria-pressed="${c === "all"}">${c === "all" ? "All" : esc(c[0].toUpperCase() + c.slice(1))}</button>`).join("");
+    const counts = rows.reduce((m, r) => (m[r.cat] = (m[r.cat] || 0) + 1, m), {});
+    const cats = ["all", ...Object.keys(counts).sort((a, b) => counts[b] - counts[a])];
+    $("#demo-cats", demo).innerHTML = cats.map(c => `<button class="chip" type="button" data-cat="${esc(c)}" aria-pressed="${c === "all"}">${c === "all" ? "All" : esc(c[0].toUpperCase() + c.slice(1))}<span class="chip-n">${c === "all" ? rows.length : counts[c]}</span></button>`).join("");
     const render = () => {
       const q = st.q.trim().toLowerCase();
       const view = rows.filter(r => (st.cat === "all" || r.cat === st.cat) && (!q || (r.h + " " + r.co.join(" ")).toLowerCase().includes(q)));
@@ -393,7 +406,7 @@
         body.innerHTML = `<pre>${esc(JSON.stringify({ count: view.length, results: out }, null, 2))}${view.length > 3 ? "\n// " + (view.length - 3) + " more" : ""}</pre>`;
         return;
       }
-      body.innerHTML = view.length ? `<table><thead><tr><th scope="col">Story</th><th scope="col" class="hide">Category</th><th scope="col" class="hide">Companies</th><th scope="col" class="r">Articles</th><th scope="col" class="r hide">Publishers</th></tr></thead><tbody>${view.map(r => `<tr><td class="h">${esc(r.h)}</td><td class="hide"><span class="tag${r.cat === "business" ? " v" : ""}">${esc(r.cat)}</span></td><td class="hide mono small">${esc(r.co.join(" · ")) || "—"}</td><td class="r"><span class="bar" style="width:${Math.round(r.a / maxA * 64)}px" aria-hidden="true"></span>${r.a}</td><td class="r hide">${r.p}</td></tr>`).join("")}</tbody></table>`
+      body.innerHTML = view.length ? `<table><thead><tr><th scope="col">Story</th><th scope="col" class="hide">Category</th><th scope="col" class="hide">Companies</th><th scope="col" class="r">Articles</th><th scope="col" class="r hide">Publishers</th></tr></thead><tbody>${view.map(r => `<tr><td class="h">${esc(r.h)}${r.langs.includes("hi") ? ' <span class="tag lang">EN + HI</span>' : ""}</td><td class="hide"><span class="tag v">${esc(r.cat)}</span></td><td class="hide mono small">${esc(r.co.join(" · ")) || "—"}</td><td class="r"><span class="bar" style="width:${Math.round(r.a / maxA * 64)}px" aria-hidden="true"></span>${r.a}</td><td class="r hide">${r.p}</td></tr>`).join("")}</tbody></table>`
         : `<p style="padding:28px 18px;color:var(--ink-3)">No stories match. Try another word.</p>`;
     };
     $("#demo-q", demo).addEventListener("input", e => { st.q = e.target.value; render(); });
@@ -408,6 +421,9 @@
   const feed = $("#fin-feed");
   if (feed) {
     const recs = JSON.parse($("#fin-data").textContent);
+    // BSE-only companies have no NSE symbol: fall back to the BSE code, then the name
+    const key = c => c.s || (c.b ? `BSE ${c.b}` : c.n);
+    recs.forEach(r => r.co.forEach(c => { c.s = key(c); }));
     const sym = new Map();
     recs.forEach(r => r.co.forEach(c => sym.set(c.s, c)));
     const bar = $("#fin-syms");
@@ -516,7 +532,7 @@
 
   /* ---------------- scroll reveals (from a visible resting state, below the fold only) ---------------- */
   if (!reduce && "IntersectionObserver" in window) {
-    const SEL = ".sec-head,.metric,.cmp,.ncard,.plan,.trust,.card-flat,.fin-item,.tl,.qa,.f,.fields > div,.cta-band,.demo,.code,.ref,.flow-card,.explorer";
+    const SEL = ".sec-head,.metric,.cmp,.ncard,.plan,.trust,.card-flat,.fin-item,.tl,.qa,.f,.fields > div,.cta-band,.demo,.code,.ref,.flow-card,.explorer,.use,.custom,.about-grid";
     const els = $$(SEL).filter(el => !el.closest(".hero,.page-hero"));
     const vh = innerHeight;
     const pending = els.filter(el => el.getBoundingClientRect().top > vh * 0.95);
